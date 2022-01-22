@@ -1,9 +1,12 @@
 from eventhandler.context import Manager
 from eventhandler.schedule import Scheduler
-from message.log import logger
+from message import log, response
 from multiprocessing import Queue
+from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
 import sys
 import time
+import toml
 import traceback
 
 
@@ -17,10 +20,20 @@ KEY = './settings/key.toml'
 SCHEDULE = './settings/schedule.toml'
 
 
+# 토큰 가져오기
+def getTokens():
+    with open(KEY) as file:
+        keyDict = toml.load(file)
+        appToken = keyDict['AppToken']['key']
+        botToken = keyDict['BotToken']['key']
+        return appToken, botToken
+
+
 # 매니저 스레드 초기화
 def initManager():
     manager = Manager(eventQueue)
     manager.start()
+    print(response.Console.initThread.format(name="manager"))
     return manager
 
 
@@ -28,6 +41,7 @@ def initManager():
 def initScheduler():
     scheduler = Scheduler(eventQueue, SCHEDULE)
     scheduler.start()
+    print(response.Console.initThread.format(name="scheduler"))
     return scheduler
 
 
@@ -51,13 +65,15 @@ if __name__ == "__main__":
         예외 발생시 종류에 상관없이 프로그램 종료하고 log 파일에 traceback 메시지를
         기록하고 프로그램을 종료합니다.
         """
-
+        appToken, botToken = getTokens()
+        # app = App(token=botToken)
+        # SocketModeHandler(app, appToken).start()
         eventQueue = Queue()
         manager = initManager()
         scheduler = initScheduler()
     except:
-        print()
-        logger.error(traceback.format_exc())
+        print(response.Console.errorThread.format(name="__main__"))
+        log.logger.error(traceback.format_exc())
         sys.exit(1)
 
     while True:

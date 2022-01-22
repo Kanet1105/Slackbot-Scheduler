@@ -7,9 +7,10 @@ eventQueue 로 들어오는 모든 이벤트 객체들에 대해 처리하고 �
 
 
 import datetime
-from message.log import logger
+from message import log, response
 from threading import Thread
 import time
+import traceback
 
 
 class Manager(Thread):
@@ -20,5 +21,9 @@ class Manager(Thread):
 
     def run(self):
         while True:
-            event = self.eventQueue.get()
-            time.sleep(1)
+            try:
+                event = self.eventQueue.get()
+                time.sleep(1)
+            except:
+                print(response.Console.errorThread.format(name="Scheduler"))
+                log.logger.error(traceback.format_exc())

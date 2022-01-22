@@ -10,7 +10,11 @@ headless interpreter 로 서버를 실행시킬 시 보이지 않습니다 (권�
 
 
 class Console:
+    # errors
     errorThread = "An error occurred while running the {name} thread."
+
+    # info
+    initThread = "{name} thread successfully initialized."
 
 
 class User:

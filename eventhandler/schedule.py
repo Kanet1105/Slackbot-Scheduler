@@ -22,6 +22,7 @@ class Scheduler(Thread):
         self.daemon = True
         self.eventQueue = eventQueue
         self.schedule = self.loadSchedule(schedulePath)
+        print(self.schedule)
         self.eventStack = self.buildEventStack()
 
     def loadSchedule(self, schedulePath):
@@ -30,7 +31,9 @@ class Scheduler(Thread):
             return schedule
 
     def buildEventStack(self):
-        return None
+        weekday, _ = self.getNow()
+        eventStack = []
+        return eventStack
 
     def getNow(self):
         now = datetime.datetime.now()
@@ -43,6 +46,6 @@ class Scheduler(Thread):
                 print(weekday, now)
                 time.sleep(1)
             except:
-                print(response.Console.errorThread.format(name=self.name))
+                print(response.Console.errorThread.format(name="Scheduler"))
                 log.logger.error(traceback.format_exc())
                 break
