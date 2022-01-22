@@ -23,6 +23,7 @@ class Manager(Thread):
         while True:
             try:
                 event = self.eventQueue.get()
+                print(event)
                 time.sleep(1)
             except:
                 print(response.Console.errorThread.format(name="Scheduler"))
