@@ -12,6 +12,7 @@ worker thread 또는 worker process 를 spawn 하는 방식으로 처리합니�
 """
 
 from eventhandler.context import Manager
+from eventhandler.crawler import Crawler
 from eventhandler.schedule import Scheduler
 from message import log, response
 from multiprocessing import Queue
@@ -29,8 +30,9 @@ import traceback
 """
 
 
-KEY = './settings/key.toml'
-SCHEDULE = './settings/schedule.toml'
+KEY = "./settings/key.toml"
+SCHEDULE = "./settings/schedule.toml"
+URL = "./settings/url.toml"
 
 
 # 토큰 가져오기
@@ -39,6 +41,7 @@ def getTokens():
         keyDict = toml.load(file)
         appToken = keyDict['AppToken']['key']
         botToken = keyDict['BotToken']['key']
+
         return appToken, botToken
 
 
@@ -50,12 +53,25 @@ def initManager():
     return manager
 
 
+# 크롤러 스레드 초기화
+def initCrawler():
+    crawler = Crawler(eventQueue, URL)
+    crawler.start()
+    print(response.Console.initThread.format(name="crawler"))
+    return crawler
+
 # 스케줄러 스레드 초기화
 def initScheduler():
     scheduler = Scheduler(eventQueue, SCHEDULE)
     scheduler.start()
     print(response.Console.initThread.format(name="scheduler"))
     return scheduler
+
+
+"""
+Slack API 용 이벤트 함수들입니다.
+이벤트 발생 시 호출됩니다.
+"""
 
 
 if __name__ == "__main__":
@@ -66,13 +82,13 @@ if __name__ == "__main__":
         예외 발생시 종류에 상관없이 프로그램 종료하고 log 파일에 traceback 메시지를
         기록하고 프로그램을 종료합니다.
         """
-
-        appToken, botToken = getTokens()
-        # app = App(token=botToken)
-        # SocketModeHandler(app, appToken).start()
         eventQueue = Queue()
         manager = initManager()
+        crawler = initCrawler()
         scheduler = initScheduler()
+        appToken, botToken = getTokens()
+        app = App(token=botToken)
+        SocketModeHandler(app, appToken).start()
     except:
         print(response.Console.errorThread.format(name="__main__"))
         log.logger.error(traceback.format_exc())

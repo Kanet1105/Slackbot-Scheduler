@@ -1,12 +1,17 @@
+
+"""
+========== loger ==========
+Thread safe 하므로 multithreaded 프로그램 내에서 안전하게 로깅할 수 있습니다.
+
+========== 사용처 ==========
+- __main__
+- eventhandler.context.Manager
+- eventhandler.schedule.Scheduler
+"""
+
+
 import logging
 
-'''
-파이썬 로깅 모듈입니다.
-Thread safe 하므로 multithreaded 프로그램 내에서 안전하게 로깅할 수 있습니다.
-    - main
-    - eventhandler.context.Manager
-    - eventhandler.schedule.Scheduler
-'''
 
 # create a logger
 logger = logging.getLogger()

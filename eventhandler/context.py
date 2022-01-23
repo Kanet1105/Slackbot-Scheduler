@@ -6,7 +6,6 @@ eventQueue 로 들어오는 모든 이벤트 객체들에 대해 처리하고 �
 """
 
 
-import datetime
 from message import log, response
 from threading import Thread
 import time
@@ -19,17 +18,20 @@ class Manager(Thread):
         self.daemon = True
         self.eventQueue = eventQueue
 
+    def handleAlarm(self):
+        pass
+
     def classifyEvent(self, event):
         eventType, eventObject = event
 
         """
         ========== 이벤트 분류 (eventType) ==========
         "alarm" << 알림
-        "upload" << 파일 업로드
+        "update" << 새 공지사항 알림
         """
 
         if eventType == "alarm":
-            print(eventObject.message)
+            self.handleAlarm()
 
     def run(self):
         while True:

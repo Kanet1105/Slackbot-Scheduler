@@ -1,3 +1,4 @@
+
 ##################################################
 # 요일별 인덱스 << datetime.weekday 와 호환되는 테이블
 # 0 = 'Monday'
@@ -15,39 +16,46 @@
 # name = 스케줄 이름
 # day = [알람을 받을 해당 요일] << [] 리스트 형식으로 위 인덱스에서 참조하여 표기
 # time = "hh:mm" << "시:분" 포맷으로 표기
-# resource =
+# resource = hyperlink String
 
 [[Schedule]]
 name = "데일리스크럼"
 day = [0, 1, 2, 3, 4]
 time = "10:00"
+resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
 
 [[Schedule]]
 name = "피어세션"
 day = [0, 1, 2, 3, 4]
 time = "16:00"
+resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
 
 [[Schedule]]
 name = "스페셜 피어세션"
 day = [4]
 time = "15:00"
+resource = ""
 
 [[Schedule]]
 name = "오피스아워 (과제 해설)"
 day = [3]
 time = "18:00"
+resource = "https://zoom.us/j/92835881503?pwd=Skp2QVllU2hlMlpDOVF3cEY5UGRXQT09"
 
 [[Schedule]]
 name = "마스터클래스 (최성철 교수님)"
 day = [4]
 time = "17:00"
+resource = "https://zoom.us/j/92835881503?pwd=Skp2QVllU2hlMlpDOVF3cEY5UGRXQT09"
 
 # For the test run only
 [[Schedule]]
 name = "test1"
 day = [6]
-time = "15:21"
+time = "16:00"
+resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
 [[Schedule]]
 name = "test2"
 day = [6]
-time = "15:21"
+time = "15:55"
+resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
