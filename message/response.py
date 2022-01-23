@@ -19,3 +19,4 @@ class Console:
 
 class User:
     welcome = ""
+    timeRemaining = "{name} 시작까지 {eventTime} 분 남았습니다."

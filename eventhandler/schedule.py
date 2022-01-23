@@ -9,6 +9,7 @@ event stack 의 제일 마지막 오브젝트부터 pop() 하고 eventQueue 에 
 
 import datetime
 from message import log, response
+from nptime import nptime
 from threading import Thread
 import time
 import toml
@@ -20,9 +21,11 @@ class Scheduler(Thread):
         super().__init__()
         self.daemon = True
         self.eventQueue = eventQueue
+        self.alarmTime = self.setAlarmTime((1, 5))
         self.schedule = self.loadSchedule(schedulePath)
         self.eventStack = self.buildEventStack()
-        print(self.eventStack)
+        for i in self.eventStack:
+            print(i.getName(), i.getEventTime(), i.getAlarmTime())
 
     # 총 스케줄을 로드하고 리스트 형태로 반환
     def loadSchedule(self, schedulePath):
@@ -30,36 +33,57 @@ class Scheduler(Thread):
             schedule = toml.load(file)
             return schedule['Schedule']
 
+    # alarm interval 을 timedelta 오브젝트 투플 형태로 저장
+    def setAlarmTime(self, minute):
+        return tuple(datetime.timedelta(minutes=value) for value in minute)
+
+    # "hh:mm" 포맷의 시간을 nptime 오브젝트로 변환
+    def parseTimeFormat(self, stringTime):
+        hour, minute = map(int, stringTime.split(":"))
+        eventTime = nptime(hour=hour, minute=minute)
+        return eventTime
+
+    # 전체 스케줄에서 오늘의 이벤트를 리스트 형태로 반환
+    def getEventToday(self):
+        weekday, now = self.getNow()
+        eventToday = []
+
+        # 오늘의 이벤트를 필터링
+        for eventDict in self.schedule:
+
+            # 당일 이벤트가 아닐 시 제외
+            if weekday not in eventDict["day"]:
+                continue
+
+            # 이미 지난 이벤트 제외
+            eventTime = self.parseTimeFormat(eventDict['time'])
+            for alarm in self.alarmTime:
+                alarmTime = eventTime - alarm
+                if alarmTime < now:
+                    continue
+
+                # 도래할 이벤트만 EventObject 형태로 저장
+                eventObject = EventObject(eventDict)
+                eventObject.setAlarmTime(alarmTime)
+                eventToday.append(eventObject)
+
+        return eventToday
+
     # 요일에 맞는 스케줄을 리스트로 반환
     def buildEventStack(self):
-        weekday, now = self.getNow()
-        eventToday = [event for event in self.schedule if weekday in event['day']]
-        eventStack = []
-
-        # 오늘의 이벤트를 가져오고 시간을 datetime.time 오브젝트로 변경해서 저장
-        for event in eventToday:
-            hour, minute = map(int, event['time'].split(":"))
-            event['time'] = datetime.time(hour=hour, minute=minute)
-
-            # 이미 지나간 이벤트의 경우 eventStack 에 추가하지 않음
-            # datetime.time 오브젝트끼리의 크기 비교 값 예시
-            # 12:40 < 12:55 => True
-            # 12:40 < 12:40 => True
-            # 12:40 < 12:30 => False
-            # 더 빠른 시간이 더 작은 값을 가짐
-            if event['time'] > now:
-                eventStack.append(event)
+        eventStack = self.getEventToday()
 
         # 이벤트가 있을 때만 시간 역순으로 정렬
         if eventStack:
-            eventStack.sort(key=lambda item: item['time'], reverse=True)
+            eventStack.sort(key=lambda eventObject: eventObject.getAlarmTime(), reverse=True)
+
         return eventStack
 
-    # 현재 요일과 시간을 (요일, 시간) 투플 형태로 반환
+    # 현재 요일과 시간을 (weekday, nptime object) 투플 형태로 반환
     def getNow(self):
         now = datetime.datetime.now()
         weekday = now.weekday()
-        timeFormat = datetime.time(hour=now.hour, minute=now.minute)
+        timeFormat = nptime(hour=now.hour, minute=now.minute)
         return weekday, timeFormat
 
     # 이벤트 스택의 가장 위에 있는 이벤트와 현재 시간을 비교해서 같다면 이벤트를 발생
@@ -68,10 +92,9 @@ class Scheduler(Thread):
         if not self.eventStack:
             return
 
-        # 이벤트 발생 시 eventQueue 에 추가
-        eventTime = self.eventStack[-1]['time']
-        if eventTime == now:
-            self.eventQueue.put(self.eventStack.pop())
+        # 이벤트 발생 시 eventQueue 에 (type, object) 형태로 추가
+        if self.eventStack[-1].getAlarmTime() == now:
+            self.eventQueue.put(("alarm", self.eventStack.pop()))
 
     def run(self):
         while True:
@@ -83,3 +106,43 @@ class Scheduler(Thread):
                 print(response.Console.errorThread.format(name="Scheduler"))
                 log.logger.error(traceback.format_exc())
                 break
+
+
+"""
+이벤트 dictionary 를 이벤트 오브젝트로 언패킹합니다.
+각 field 마다 class attribute 로 할당되며 필드에 접근할 수 있는 class method를
+따로 만듭니다.
+"""
+
+
+class EventObject:
+    def __init__(self, event):
+        self.name = None        # String
+        self.day = None         # Weekday Index from 0 to 6
+        self.eventTime = None   # "hh:mm" formatted String
+        self.alarmTime = None   # nptime object
+        self.resource = None  # hyperlink String
+        self.buildEventObject(event)
+        self.message = response.User.timeRemaining.format(name=self.name, eventTime=self.eventTime)
+
+    # 이벤트 dictionary 를 이벤트 오브젝트로 변환
+    def buildEventObject(self, event):
+        self.name = event['name']
+        self.day = event['day']
+        self.eventTime = event['time']
+
+    # 이벤트명 반환
+    def getName(self):
+        return self.name
+
+    # 이벤트 발생 시간을 반환
+    def getEventTime(self):
+        return self.eventTime
+
+    # 알람 시간을 반환
+    def getAlarmTime(self):
+        return self.alarmTime
+    
+    # 알람 시간을 설정
+    def setAlarmTime(self, timeObject):
+        self.alarmTime = timeObject

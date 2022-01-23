@@ -19,11 +19,25 @@ class Manager(Thread):
         self.daemon = True
         self.eventQueue = eventQueue
 
+    def classifyEvent(self, event):
+        eventType, eventObject = event
+
+        """
+        ========== 이벤트 분류 (eventType) ==========
+        "alarm" << 알림
+        "upload" << 파일 업로드
+        """
+
+        if eventType == "alarm":
+            print(eventObject.name)
+            print(eventObject.eventTime)
+            print(eventObject.alarmTime)
+
     def run(self):
         while True:
             try:
                 event = self.eventQueue.get()
-                print(event)
+                self.classifyEvent(event)
                 time.sleep(1)
             except:
                 print(response.Console.errorThread.format(name="Scheduler"))

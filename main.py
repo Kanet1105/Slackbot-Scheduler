@@ -1,3 +1,16 @@
+
+"""
+========== Work Flow ==========
+모든 이벤트 (slack api 이벤트 및 schedule 과 관련된 시간이 정해진 이벤트)는
+eventhandler 패키지 내 context 모듈 안에 있는 manager thread 에 thread-safe 한 Queue
+오브젝트를 통해 (type, content) tuple 타입으로 전달됩니다.
+
+manager thread 는 이벤트에 대한 요청을 처리하면서 io-bound 한 작업들의 경우
+worker thread 또는 worker process 를 spawn 하는 방식으로 처리합니다.
+
+만약 메세지를 반환해야 할 경우 message 패키지 내에 있는 user 모듈을 참조합니다.
+"""
+
 from eventhandler.context import Manager
 from eventhandler.schedule import Scheduler
 from message import log, response
@@ -43,19 +56,6 @@ def initScheduler():
     scheduler.start()
     print(response.Console.initThread.format(name="scheduler"))
     return scheduler
-
-
-"""
-=====Work Flow=====
-모든 이벤트 (slack api 이벤트 및 schedule 과 관련된 시간이 정해진 이벤트)는
-eventhandler 패키지 내 context 모듈 안에 있는 manager thread 에 thread-safe 한 Queue
-오브젝트를 통해 (type, content) tuple 타입으로 전달됩니다.
-
-manager thread 는 이벤트에 대한 요청을 처리하면서 io-bound 한 작업들의 경우 
-worker thread 또는 worker process 를 spawn 하는 방식으로 처리합니다.
-
-만약 메세지를 반환해야 할 경우 message 패키지 내에 있는 user 모듈을 참조합니다.
-"""
 
 
 if __name__ == "__main__":
