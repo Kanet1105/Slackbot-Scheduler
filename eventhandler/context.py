@@ -29,9 +29,7 @@ class Manager(Thread):
         """
 
         if eventType == "alarm":
-            print(eventObject.name)
-            print(eventObject.eventTime)
-            print(eventObject.alarmTime)
+            print(eventObject.message)
 
     def run(self):
         while True:

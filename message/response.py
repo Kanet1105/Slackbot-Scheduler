@@ -18,5 +18,9 @@ class Console:
 
 
 class User:
-    welcome = ""
-    timeRemaining = "{name} 시작까지 {eventTime} 분 남았습니다."
+    alarm = "{name} 시작까지 {interval} 분 남았습니다.\n" \
+            "{resource}"
+
+    @staticmethod
+    def sendMessage(app, message):
+        pass

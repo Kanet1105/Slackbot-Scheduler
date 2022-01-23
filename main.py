@@ -60,11 +60,13 @@ def initScheduler():
 
 if __name__ == "__main__":
     try:
+
         """
         리소스 및 작업 스레드를 초기화합니다.
         예외 발생시 종류에 상관없이 프로그램 종료하고 log 파일에 traceback 메시지를
         기록하고 프로그램을 종료합니다.
         """
+
         appToken, botToken = getTokens()
         # app = App(token=botToken)
         # SocketModeHandler(app, appToken).start()

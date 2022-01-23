@@ -4,6 +4,19 @@
 schedule.toml 파일을 참조하고 시간 역순으로 sort 해서 eventStack 에 추가합니다.
 시간 역순으로 sorting 하기 때문에 schedule.toml 파일에 스케쥴을 추가할 때 시간순으로 넣을 필요 없습니다.
 event stack 의 제일 마지막 오브젝트부터 pop() 하고 eventQueue 에 push 해주는 역할을 해 주는 thread 입니다.
+
+
+========== nptime 패키지 ==========
+nptime 패키지는 python timedelta 연산을 돕는 외부 패키지 입니다.
+nptime 간의 연산 결과는 datetime.timedelta 오브젝트를 반환합니다.
+
+
+========== 시간의 부등호 연산 ==========
+nptime 오브젝트끼리의 비교는 시간 순서의 비교를 bool 형태로 반환합니다.
+
+    예)  a = nptime(hour=17, minute=30; b = nptime(hour=17, minute=40) 가 있을 때
+        a > b 의 리턴값은 False 이며
+        a < b 의 리턴값은 True 입니다.
 """
 
 
@@ -24,8 +37,6 @@ class Scheduler(Thread):
         self.alarmTime = self.setAlarmTime((1, 5))
         self.schedule = self.loadSchedule(schedulePath)
         self.eventStack = self.buildEventStack()
-        for i in self.eventStack:
-            print(i.getName(), i.getEventTime(), i.getAlarmTime())
 
     # 총 스케줄을 로드하고 리스트 형태로 반환
     def loadSchedule(self, schedulePath):
@@ -56,15 +67,15 @@ class Scheduler(Thread):
                 continue
 
             # 이미 지난 이벤트 제외
-            eventTime = self.parseTimeFormat(eventDict['time'])
+            eventDict['time'] = self.parseTimeFormat(eventDict['time'])
             for alarm in self.alarmTime:
-                alarmTime = eventTime - alarm
+                alarmTime = eventDict['time'] - alarm
                 if alarmTime < now:
                     continue
 
                 # 도래할 이벤트만 EventObject 형태로 저장
+                eventDict['alarm'] = alarmTime
                 eventObject = EventObject(eventDict)
-                eventObject.setAlarmTime(alarmTime)
                 eventToday.append(eventObject)
 
         return eventToday
@@ -119,17 +130,24 @@ class EventObject:
     def __init__(self, event):
         self.name = None        # String
         self.day = None         # Weekday Index from 0 to 6
-        self.eventTime = None   # "hh:mm" formatted String
+        self.eventTime = None   # nptime object
         self.alarmTime = None   # nptime object
-        self.resource = None  # hyperlink String
+        self.resource = None    # hyperlink String
+        self.message = None     # user message String
         self.buildEventObject(event)
-        self.message = response.User.timeRemaining.format(name=self.name, eventTime=self.eventTime)
 
     # 이벤트 dictionary 를 이벤트 오브젝트로 변환
     def buildEventObject(self, event):
         self.name = event['name']
         self.day = event['day']
         self.eventTime = event['time']
+        self.resource = event['resource']
+        self.alarmTime = event['alarm']
+        self.message = response.User.alarm.format(
+            name=self.name,
+            interval=(self.eventTime - self.alarmTime).seconds // 60,
+            resource=self.resource
+        )
 
     # 이벤트명 반환
     def getName(self):
@@ -142,7 +160,3 @@ class EventObject:
     # 알람 시간을 반환
     def getAlarmTime(self):
         return self.alarmTime
-    
-    # 알람 시간을 설정
-    def setAlarmTime(self, timeObject):
-        self.alarmTime = timeObject
