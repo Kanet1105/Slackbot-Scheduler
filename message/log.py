@@ -13,12 +13,10 @@ Thread safe 하므로 multithreaded 프로그램 내에서 안전하게 로깅�
 import logging
 
 
-# create a logger
-logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
-
-# write a log to the file
-writer = logging.FileHandler('./log.txt')
-formatter = logging.Formatter('[%(asctime)s]: %(message)s\n')
+# system logger
+systemLogger = logging.getLogger()
+systemLogger.setLevel(logging.ERROR)
+writer = logging.FileHandler("./log.txt")
+formatter = logging.Formatter("[%(asctime)s]: %(message)s\n")
 writer.setFormatter(formatter)
-logger.addHandler(writer)
+systemLogger.addHandler(writer)

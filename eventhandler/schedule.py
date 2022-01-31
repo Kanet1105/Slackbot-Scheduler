@@ -4,6 +4,7 @@
 schedule.toml 파일을 참조하고 시간 역순으로 sort 해서 eventStack 에 추가합니다.
 시간 역순으로 sorting 하기 때문에 schedule.toml 파일에 스케쥴을 추가할 때 시간순으로 넣을 필요 없습니다.
 event stack 의 제일 마지막 오브젝트부터 pop() 하고 eventQueue 에 push 해주는 역할을 해 주는 thread 입니다.
+런타임에 스케줄을 변경할 수 있습니다.
 
 
 ========== nptime 패키지 ==========
@@ -23,6 +24,7 @@ nptime 오브젝트끼리의 비교는 시간 순서의 비교를 bool 형태로
 import datetime
 from message import log, response
 from nptime import nptime
+import os
 from threading import Thread
 import time
 import toml
@@ -34,8 +36,9 @@ class Scheduler(Thread):
         super().__init__()
         self.daemon = True
         self.eventQueue = eventQueue
+        self.schedulePath = schedulePath
+        self.fileModifiedTime = os.path.getmtime(self.schedulePath)
         self.alarmTime = self.setAlarmTime((1, 5))
-        self.schedule = self.loadSchedule(schedulePath)
         self.eventStack = self.buildEventStack()
 
     # 총 스케줄을 로드하고 리스트 형태로 반환
@@ -56,11 +59,12 @@ class Scheduler(Thread):
 
     # 전체 스케줄에서 오늘의 이벤트를 리스트 형태로 반환
     def getEventToday(self):
+        schedule = self.loadSchedule(self.schedulePath)
         weekday, now = self.getNow()
         eventToday = []
 
         # 오늘의 이벤트를 필터링
-        for eventDict in self.schedule:
+        for eventDict in schedule:
 
             # 당일 이벤트가 아닐 시 제외
             if weekday not in eventDict["day"]:
@@ -107,15 +111,33 @@ class Scheduler(Thread):
         if self.eventStack[-1].getAlarmTime() == now:
             self.eventQueue.put(("alarm", self.eventStack.pop()))
 
+    # Schedule.toml 파일 변경시 변경된 스케줄 런타임에 반영
+    def updateSchedule(self):
+        lastModifiedTime = os.path.getmtime(self.schedulePath)
+        
+        # 파일 변경시간 체크 후 이벤트스택 새로 생성
+        if lastModifiedTime != self.fileModifiedTime:
+            try:
+                self.eventStack = self.buildEventStack()
+                message = response.Console.scheduleChanged
+                log.systemLogger.info(message)
+                print(message)
+            except:
+                message = response.Console.scheduleWrongFormat.format(traceback=traceback.format_exc())
+                log.systemLogger.error(message)
+                print(message)
+        self.fileModifiedTime = lastModifiedTime
+
     def run(self):
         while True:
             try:
+                self.updateSchedule()
                 weekday, now = self.getNow()
                 self.alarm(now)
                 time.sleep(1)
             except:
                 print(response.Console.errorThread.format(name="Scheduler"))
-                log.logger.error(traceback.format_exc())
+                log.systemLogger.error(traceback.format_exc())
                 break
 
 
@@ -143,14 +165,9 @@ class EventObject:
         self.eventTime = event['time']
         self.resource = event['resource']
         self.alarmTime = event['alarm']
-        self.message = response.User.alarm.format(
-            name=self.name,
-            interval=(self.eventTime - self.alarmTime).seconds // 60,
-            resource=self.resource
-        )
 
     # 이벤트명 반환
-    def getName(self):
+    def getEventName(self):
         return self.name
 
     # 이벤트 발생 시간을 반환
@@ -160,3 +177,7 @@ class EventObject:
     # 알람 시간을 반환
     def getAlarmTime(self):
         return self.alarmTime
+
+    # 이벤트 리소스를 반환
+    def getEventResource(self):
+        return self.resource

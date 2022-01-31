@@ -1,8 +1,0 @@
-
-# 크롤링할 사이트 목록
-# ========== 작성 방법 ==========
-# [[Target]]
-# url = 주소
-
-[[Target]]
-url = "https://www.boostcourse.org/boostcampaitech3/notices/349901"

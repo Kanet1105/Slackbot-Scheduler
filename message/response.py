@@ -15,6 +15,8 @@ class Console:
 
     # info
     initThread = "{name} thread successfully initialized."
+    scheduleChanged = "schedule.toml has been modified."
+    scheduleWrongFormat = "error while loading schedule.toml\n{traceback}"
 
 
 class User:
@@ -22,5 +24,8 @@ class User:
             "{resource}"
 
     @staticmethod
-    def sendMessage(app, message):
-        pass
+    def sendMessage(app, channelID, message):
+        app.client.chat_postMessage(
+            channel=channelID,
+            text=message,
+        )

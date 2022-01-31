@@ -1,0 +1,9 @@
+[AppToken]
+key = ""
+
+[BotToken]
+key = ""
+
+[Channel]
+    [Channel.Alarm]
+        ID = ""

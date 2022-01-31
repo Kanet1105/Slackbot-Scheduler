@@ -50,12 +50,7 @@ resource = "https://zoom.us/j/92835881503?pwd=Skp2QVllU2hlMlpDOVF3cEY5UGRXQT09"
 
 # For the test run only
 [[Schedule]]
-name = "test1"
-day = [6]
-time = "16:00"
-resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
-[[Schedule]]
-name = "test2"
-day = [6]
-time = "15:55"
+name = "test"
+day = [1]
+time = "00:14"
 resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"

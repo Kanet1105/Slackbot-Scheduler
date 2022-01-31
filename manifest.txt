@@ -1,0 +1,21 @@
+display_information:
+  name: Scheduler-Bot
+features:
+  bot_user:
+    display_name: Scheduler-Bot
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - channels:history
+      - chat:write
+      - chat:write.public
+settings:
+  event_subscriptions:
+    bot_events:
+      - message.channels
+  interactivity:
+    is_enabled: true
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false

@@ -11,17 +11,42 @@ worker thread 또는 worker process 를 spawn 하는 방식으로 처리합니�
 만약 메세지를 반환해야 할 경우 message 패키지 내에 있는 user 모듈을 참조합니다.
 """
 
+
 from eventhandler.context import Manager
-from eventhandler.crawler import Crawler
 from eventhandler.schedule import Scheduler
 from message import log, response
 from multiprocessing import Queue
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import sys
-import time
 import toml
 import traceback
+
+
+# 토큰 가져오기
+def getTokens():
+    with open(KEY) as file:
+        keyDict = toml.load(file)
+        appToken = keyDict["AppToken"]["key"]
+        botToken = keyDict["BotToken"]["key"]
+        alarmChannel = keyDict["Channel"]["Alarm"]["ID"]
+        return appToken, botToken, alarmChannel
+
+
+# 매니저 스레드 초기화
+def initManager(eventQueue, app, alarmChannel):
+    manager = Manager(eventQueue, app, alarmChannel)
+    manager.start()
+    print(response.Console.initThread.format(name="manager"))
+    return manager
+
+
+# 스케줄러 스레드 초기화
+def initScheduler(eventQueue, schedulePath):
+    scheduler = Scheduler(eventQueue, schedulePath)
+    scheduler.start()
+    print(response.Console.initThread.format(name="scheduler"))
+    return scheduler
 
 
 """
@@ -29,43 +54,27 @@ import traceback
 '파일명.toml' 파일 형식으로 관리되며 프로그램 내에서 dict 타입으로 로드됩니다.
 """
 
-
 KEY = "./settings/key.toml"
 SCHEDULE = "./settings/schedule.toml"
-URL = "./settings/url.toml"
+UPLOAD = "./settings/"
 
 
-# 토큰 가져오기
-def getTokens():
-    with open(KEY) as file:
-        keyDict = toml.load(file)
-        appToken = keyDict['AppToken']['key']
-        botToken = keyDict['BotToken']['key']
+"""
+리소스 및 작업 스레드를 초기화합니다.
+예외 발생시 종류에 상관없이 프로그램 종료하고 log 파일에 traceback 메시지를
+기록하고 프로그램을 종료합니다.
+"""
 
-        return appToken, botToken
-
-
-# 매니저 스레드 초기화
-def initManager():
-    manager = Manager(eventQueue)
-    manager.start()
-    print(response.Console.initThread.format(name="manager"))
-    return manager
-
-
-# 크롤러 스레드 초기화
-def initCrawler():
-    crawler = Crawler(eventQueue, URL)
-    crawler.start()
-    print(response.Console.initThread.format(name="crawler"))
-    return crawler
-
-# 스케줄러 스레드 초기화
-def initScheduler():
-    scheduler = Scheduler(eventQueue, SCHEDULE)
-    scheduler.start()
-    print(response.Console.initThread.format(name="scheduler"))
-    return scheduler
+try:
+    eventQueue = Queue()
+    appToken, botToken, alarmChannel = getTokens()
+    app = App(token=botToken)
+    manager = initManager(eventQueue, app, alarmChannel)
+    scheduler = initScheduler(eventQueue, SCHEDULE)
+except:
+    print(response.Console.errorThread.format(name="initializer"))
+    log.systemLogger.error(traceback.format_exc())
+    sys.exit(1)
 
 
 """
@@ -74,25 +83,13 @@ Slack API 용 이벤트 함수들입니다.
 """
 
 
+@app.event("message")
+def onReceivingMessage(event):
+    if "files" in event:
+        eventQueue.put(("file", event))
+    if "http://" in event["text"]:
+        eventQueue.put(("link", event))
+
+
 if __name__ == "__main__":
-    try:
-
-        """
-        리소스 및 작업 스레드를 초기화합니다.
-        예외 발생시 종류에 상관없이 프로그램 종료하고 log 파일에 traceback 메시지를
-        기록하고 프로그램을 종료합니다.
-        """
-        eventQueue = Queue()
-        manager = initManager()
-        crawler = initCrawler()
-        scheduler = initScheduler()
-        appToken, botToken = getTokens()
-        app = App(token=botToken)
-        SocketModeHandler(app, appToken).start()
-    except:
-        print(response.Console.errorThread.format(name="__main__"))
-        log.logger.error(traceback.format_exc())
-        sys.exit(1)
-
-    while True:
-        time.sleep(1)
+    SocketModeHandler(app, appToken).start()
