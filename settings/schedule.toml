@@ -29,28 +29,3 @@ name = "피어세션"
 day = [0, 1, 2, 3, 4]
 time = "16:00"
 resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
-
-[[Schedule]]
-name = "스페셜 피어세션"
-day = [4]
-time = "15:00"
-resource = ""
-
-[[Schedule]]
-name = "오피스아워 (과제 해설)"
-day = [3]
-time = "18:00"
-resource = "https://zoom.us/j/92835881503?pwd=Skp2QVllU2hlMlpDOVF3cEY5UGRXQT09"
-
-[[Schedule]]
-name = "마스터클래스 (최성철 교수님)"
-day = [4]
-time = "17:00"
-resource = "https://zoom.us/j/92835881503?pwd=Skp2QVllU2hlMlpDOVF3cEY5UGRXQT09"
-
-# For the test run only
-[[Schedule]]
-name = "test"
-day = [1]
-time = "00:14"
-resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"

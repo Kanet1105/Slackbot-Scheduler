@@ -44,6 +44,7 @@ class Manager(Thread):
         self.saveData(eventObject["text"] + "\n")
 
     def saveData(self, data):
+        print(data)
         with open("./upload.txt", "a+", encoding="utf-8") as file:
             file.write(data)
 

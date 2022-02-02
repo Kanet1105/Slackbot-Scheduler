@@ -87,7 +87,7 @@ Slack API 용 이벤트 함수들입니다.
 def onReceivingMessage(event):
     if "files" in event:
         eventQueue.put(("file", event))
-    if "http://" in event["text"]:
+    if "https://" in event["text"] or "http://" in event["text"]:
         eventQueue.put(("link", event))
 
 
