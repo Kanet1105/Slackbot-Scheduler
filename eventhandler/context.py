@@ -22,15 +22,7 @@ class Manager(Thread):
 
     # 스케줄 알람 메시지
     def handleAlarm(self, eventObject):
-        eventName = eventObject.getEventName()
-        eventTime = eventObject.getEventTime()
-        alarmTime = eventObject.getAlarmTime()
-        resource = eventObject.getEventResource()
-        message = response.User.alarm.format(
-            name=eventName,
-            interval=(eventTime - alarmTime).seconds // 60,
-            resource=resource
-        )
+        message = eventObject.getEventMessage()
         response.User.sendMessage(self.app, self.alarmChannel, message)
 
     def handleFile(self, eventObject):

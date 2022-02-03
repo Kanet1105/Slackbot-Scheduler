@@ -20,8 +20,8 @@ class Console:
 
 
 class User:
-    alarm = "{name} 시작까지 {interval} 분 남았습니다.\n" \
-            "{resource}"
+    alarmInterval = "{name}까지 {interval} 분 남았습니다.\n{resource}"
+    alarmOnTime = "{name} 시간입니다.\n{resource}"
 
     @staticmethod
     def sendMessage(app, channelID, message):

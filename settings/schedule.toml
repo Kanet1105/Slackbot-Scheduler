@@ -16,16 +16,37 @@
 # name = 스케줄 이름
 # day = [알람을 받을 해당 요일] << [] 리스트 형식으로 위 인덱스에서 참조하여 표기
 # time = "hh:mm" << "시:분" 포맷으로 표기
+# interval = [1, 5] << 1분 5분 간격으로 알림 설정; [0] << 값을 0으로 지정할 경우 정시에 한번만 울림
 # resource = hyperlink String
+
+[[Schedule]]
+name = "학습 시작"
+day = [0, 1, 2, 3, 4]
+time = "09:40"
+interval = [0]
+resource = """
+부스트코스 https://www.boostcourse.org/boostcampaitech3/joinLectures/350802
+실명인증 https://www.boostcourse.org/userInfo/base-info
+이모지 클릭 https://aitech3.slack.com/archives/C02QMPCGED8
+"""
+
+[[Schedule]]
+name = "학습 종료"
+day = [0, 1, 2, 3, 4]
+time = "19:10"
+interval = [0]
+resource = "부스트코스 https://www.boostcourse.org/boostcampaitech3/joinLectures/350802"
 
 [[Schedule]]
 name = "데일리스크럼"
 day = [0, 1, 2, 3, 4]
 time = "10:00"
-resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
+interval = [1, 5]
+resource = "줌 회의실 https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
 
 [[Schedule]]
 name = "피어세션"
 day = [0, 1, 2, 3, 4]
 time = "16:00"
-resource = "https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"
+interval = [1, 5]
+resource = "줌 회의실 https://zoom.us/j/92751003661?pwd=TDNMOG1nRjM3V1RPYnFsVll6VHNHdz09"

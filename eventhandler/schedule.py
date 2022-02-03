@@ -38,14 +38,14 @@ class Scheduler(Thread):
         self.eventQueue = eventQueue
         self.schedulePath = schedulePath
         self.fileModifiedTime = os.path.getmtime(self.schedulePath)
-        self.alarmTime = self.setAlarmTime((1, 5))
+        # self.alarmTime = self.setAlarmTime((1, 5))
         self.eventStack = self.buildEventStack()
 
     # 총 스케줄을 로드하고 리스트 형태로 반환
     def loadSchedule(self, schedulePath):
         with open(schedulePath, "r", encoding="utf-8") as file:
             schedule = toml.load(file)
-            return schedule['Schedule']
+            return schedule["Schedule"]
 
     # alarm interval 을 timedelta 오브젝트 투플 형태로 저장
     def setAlarmTime(self, minute):
@@ -71,14 +71,15 @@ class Scheduler(Thread):
                 continue
 
             # 이미 지난 이벤트 제외
-            eventDict['time'] = self.parseTimeFormat(eventDict['time'])
-            for alarm in self.alarmTime:
-                alarmTime = eventDict['time'] - alarm
+            eventDict["time"] = self.parseTimeFormat(eventDict["time"])
+            eventDict["interval"] = self.setAlarmTime(eventDict["interval"])
+            for interval in eventDict["interval"]:
+                alarmTime = eventDict["time"] - interval
                 if alarmTime < now:
                     continue
 
                 # 도래할 이벤트만 EventObject 형태로 저장
-                eventDict['alarm'] = alarmTime
+                eventDict["alarm"] = alarmTime
                 eventObject = EventObject(eventDict)
                 eventToday.append(eventObject)
 
@@ -160,11 +161,12 @@ class EventObject:
 
     # 이벤트 dictionary 를 이벤트 오브젝트로 변환
     def buildEventObject(self, event):
-        self.name = event['name']
-        self.day = event['day']
-        self.eventTime = event['time']
-        self.resource = event['resource']
-        self.alarmTime = event['alarm']
+        self.name = event["name"]
+        self.day = event["day"]
+        self.eventTime = event["time"]
+        self.resource = event["resource"]
+        self.alarmTime = event["alarm"]
+        self.buildEventMessage()
 
     # 이벤트명 반환
     def getEventName(self):
@@ -181,3 +183,21 @@ class EventObject:
     # 이벤트 리소스를 반환
     def getEventResource(self):
         return self.resource
+
+    # 이벤트 메시지를 반환
+    def getEventMessage(self):
+        return self.message
+
+    # 이벤트 메시지 구성
+    def buildEventMessage(self):
+        if self.eventTime == self.alarmTime:
+            self.message = response.User.alarmOnTime.format(
+                name=self.getEventName(),
+                resource=self.getEventResource(),
+            )
+        else:
+            self.message = response.User.alarmInterval.format(
+                name=self.getEventName(),
+                interval=(self.getEventTime() - self.getAlarmTime()).seconds // 60,
+                resource=self.getEventResource(),
+            )
